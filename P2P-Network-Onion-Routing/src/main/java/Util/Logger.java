@@ -40,4 +40,8 @@ public class Logger {
     public static void chat(String source, String content){
         System.out.println(ANSI_CYAN + "[" +source + "]:" + content + ANSI_RESET);
     }
+
+    public static void chat(String content){
+        chat("[CHAT]", content);
+    }
 }

@@ -11,9 +11,21 @@ public class PeerList {
 
     private static ExecutorService thread_pool = Executors.newCachedThreadPool();
 
-    public static void addConnection(PeerConnection peer){
+    public synchronized static void addConnection(PeerConnection peer){
+
+        for (int i = 0; i < peerList.size(); i++) {
+            if (peerList.get(i).getAddress().getHostAddress().equals(peer.getAddress().getHostAddress())) {
+                peer.disconnect();
+                return;
+            }
+        }
+
         peerList.add(peer);
         thread_pool.submit(peer);
+
+        Logger.log("New peer added, has address == " + peer.getAddress().getHostAddress() + " number of peers == " + get_PEER_NUM(), LogLevel.INFO);
+
+//        peer.sendMessage(Message.createPEER_DISCOVERY_REQUEST());
 //        Logger.log("New peer added to peerList", LogLevel.SUCCESS);
     }
 
@@ -28,5 +40,22 @@ public class PeerList {
         }catch (IndexOutOfBoundsException e){
             return null;
         }
+    }
+
+    public static int get_PEER_NUM(){
+        return peerList.size();
+    }
+
+
+    public static String[] getAddresses(String excludeAddr){
+        ArrayList<String> addresses = new ArrayList<>(peerList.size() - 1);
+        for (int i=0; i<peerList.size(); i++){
+            addresses.add(peerList.get(i).getAddress().getHostAddress());
+        }
+        return addresses.toArray(new String[0]);
+    }
+    public static String getAddressList(String excludeAddr){
+        String[] addresses = getAddresses(excludeAddr);
+        return String.join(";", addresses);
     }
 }

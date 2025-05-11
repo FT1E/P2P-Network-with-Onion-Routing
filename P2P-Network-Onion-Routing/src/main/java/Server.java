@@ -21,6 +21,8 @@ public class Server implements Runnable{
     @Override
     public void run() {
 
+        Logger.log("Server started ... ", LogLevel.SUCCESS);
+
         Socket socket;
         while (true){
 

@@ -30,8 +30,13 @@ public class PeerConnection implements Runnable{
 
         PeerList.addConnection(this);
     }
-
     public PeerConnection(String stringAddress) throws IOException{
+
+        if(stringAddress.equals(Constants.getMY_IP())){
+            Logger.log("Trying to connect to myself", LogLevel.DEBUG);
+            throw new IOException();
+        }
+
         InetAddress inetAddress = InetAddress.getByName(stringAddress);
         this.socket = new Socket(inetAddress, Constants.getSERVER_PORT());
         OutputStream os = socket.getOutputStream();
@@ -39,8 +44,11 @@ public class PeerConnection implements Runnable{
         writer = new BufferedWriter(new OutputStreamWriter(os));
         reader = new BufferedReader(new InputStreamReader(is));
 
-
         PeerList.addConnection(this);
+    }
+
+    public InetAddress getAddress(){
+        return socket.getInetAddress();
     }
 
     private String getRawMessage(){
@@ -59,6 +67,8 @@ public class PeerConnection implements Runnable{
             return true;
         } catch (IOException e) {
             Logger.log("Error in sending message to peer!", LogLevel.ERROR);
+            Logger.log("(writer == null) " + (writer == null), LogLevel.DEBUG);
+            Logger.log("Message:" + message.toString(), LogLevel.DEBUG);
             return false;
         }
     }
@@ -68,24 +78,33 @@ public class PeerConnection implements Runnable{
     public void run() {
 
         String rawMessage;
+        Message message;
         while(true){
 
             rawMessage = getRawMessage();
 
             if(rawMessage == null) continue;
+            try{
+                message = new Message(rawMessage);
+            }catch (IOException e){
+                Logger.log("Invalid raw message", LogLevel.ERROR);
+                continue;
+            }
 
-            proccessMessage(new Message(rawMessage));
+            proccessMessage(message);
+//            MessageProcessing.addMessage(message);
         }
-
-
     }
+
 
     private void proccessMessage(Message message){
         switch (message.getType()){
-            case CHAT -> Logger.chat(socket.getInetAddress().toString(), message.getBody());
-            default -> Logger.log("Invalid message type", LogLevel.INFO);
+            case CHAT -> MessageProcessing.handleChat(message);
+            case PEER_DISCOVERY_REPLY -> MessageProcessing.handlePeerDiscoveryReply(message);
+            case PEER_DISCOVERY_REQUEST -> MessageProcessing.handlePeerDiscoveryRequest(this);
         }
     }
+
 
     public boolean disconnect(){
         try{
@@ -94,7 +113,7 @@ public class PeerConnection implements Runnable{
             socket.close();
             return true;
         }catch (IOException e){
-            Logger.log("Error in trying to disconnect socket", LogLevel.ERROR);
+            Logger.log("Error in trying to close socket with address " + socket.getInetAddress().getHostAddress(), LogLevel.ERROR);
             return false;
         }
     }
