@@ -36,7 +36,7 @@ public class PeerList {
     // end add connection
 
     // Remove connection
-    public static void removeConnection(PeerConnection peer){
+    public synchronized static void removeConnection(PeerConnection peer){
         peerList.remove(peer);
         peer.disconnect();
     }
@@ -82,7 +82,7 @@ public class PeerList {
         return getAddressArrayList(excludeAddr).toArray(new String[0]);
     }
 
-    public static ArrayList<String> getAddressArrayList(String excludeAddr){
+    public synchronized static ArrayList<String> getAddressArrayList(String excludeAddr){
         ArrayList<String> addresses = new ArrayList<>(peerList.size() - 1);
         for (int i=0; i<peerList.size(); i++){
             if (peerList.get(i).getAddress().getHostAddress().equals(excludeAddr)) continue;

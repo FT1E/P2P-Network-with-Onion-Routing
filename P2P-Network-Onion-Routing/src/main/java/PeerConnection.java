@@ -12,6 +12,9 @@ public class PeerConnection implements Runnable{
     private Socket socket;
     private BufferedWriter writer;
     private BufferedReader reader;
+
+    private final Object writeLock;
+    private final Object readLock;
     // end variables
 
 
@@ -25,6 +28,9 @@ public class PeerConnection implements Runnable{
         reader = new BufferedReader(new InputStreamReader(is));
 
 
+        writeLock = new Object();
+        readLock = new Object();
+
         PeerList.addConnection(this);
     }
 
@@ -34,6 +40,9 @@ public class PeerConnection implements Runnable{
         InputStream is = socket.getInputStream();
         writer = new BufferedWriter(new OutputStreamWriter(os));
         reader = new BufferedReader(new InputStreamReader(is));
+
+        writeLock = new Object();
+        readLock = new Object();
 
         PeerList.addConnection(this);
     }
@@ -51,6 +60,10 @@ public class PeerConnection implements Runnable{
         writer = new BufferedWriter(new OutputStreamWriter(os));
         reader = new BufferedReader(new InputStreamReader(is));
 
+
+        writeLock = new Object();
+        readLock = new Object();
+
         PeerList.addConnection(this);
     }
     // end CONSTRUCTORS
@@ -64,25 +77,29 @@ public class PeerConnection implements Runnable{
 
 
     // Core methods for sending and receiving message
-    private String getRawMessage(){
-        try {
-            return reader.readLine();
-        } catch (IOException e) {
-            return null;
+    private String getRawMessage() {
+        synchronized (readLock) {
+            try {
+                return reader.readLine();
+            } catch (IOException e) {
+                return null;
+            }
         }
     }
 
     public boolean sendMessage(Message message){
-        try {
+        synchronized (writeLock){
+            try {
 //            Logger.log("Sending:" + message.toString(), LogLevel.DEBUG);
-            writer.write(message.toString() + "\n");
-            writer.flush();
-            return true;
-        } catch (IOException e) {
-            Logger.log("Error in sending message to peer!", LogLevel.ERROR);
-            Logger.log("(writer == null) " + (writer == null), LogLevel.DEBUG);
-            Logger.log("Message:" + message.toString(), LogLevel.DEBUG);
-            return false;
+                writer.write(message.toString() + "\n");
+                writer.flush();
+                return true;
+            } catch (IOException e) {
+                Logger.log("Error in sending message to peer!", LogLevel.ERROR);
+                Logger.log("(writer == null) " + (writer == null), LogLevel.DEBUG);
+                Logger.log("Message:" + message.toString(), LogLevel.DEBUG);
+                return false;
+            }
         }
     }
     // end Core methods
@@ -131,6 +148,7 @@ public class PeerConnection implements Runnable{
     public boolean disconnect(){
         Logger.log("Trying to close connection with peer [" + getAddress().getHostAddress() + "]", LogLevel.INFO);
         try{
+            PeerList.removeConnection(this);
             writer.close();
             reader.close();
             socket.close();
