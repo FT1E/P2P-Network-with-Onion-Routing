@@ -7,10 +7,18 @@ import java.util.concurrent.Executors;
 
 public class PeerList {
 
+    // static class for keeping all the peers
+    // list of all peers and a thread_pool for their runnables (receiving and processing messages)
+
+
+    // variables
     private static ArrayList<PeerConnection> peerList = new ArrayList<>();
 
     private static ExecutorService thread_pool = Executors.newCachedThreadPool();
+    // end variables
 
+
+    // Add connection
     public synchronized static void addConnection(PeerConnection peer){
 
         for (int i = 0; i < peerList.size(); i++) {
@@ -28,12 +36,18 @@ public class PeerList {
 //        peer.sendMessage(Message.createPEER_DISCOVERY_REQUEST());
 //        Logger.log("New peer added to peerList", LogLevel.SUCCESS);
     }
+    // end add connection
 
+    // Remove connection
     public static void removeConnection(PeerConnection peer){
         peerList.remove(peer);
         peer.disconnect();
     }
+    // end remove connection
 
+
+    // get PeerConnection
+    // for sending messages
     public static PeerConnection get(int i){
         try{
             return peerList.get(i);
@@ -41,12 +55,21 @@ public class PeerList {
             return null;
         }
     }
+    // end get PeerConnection
 
+
+    // Get number of connections
     public static int get_PEER_NUM(){
         return peerList.size();
     }
+    // end get number of connections
 
 
+
+    // Get addresses
+    // get a list of all addresses except excludeAddr
+    // used for generating PEER_DISCOVERY_REPLY message
+    // returns array
     public static String[] getAddresses(String excludeAddr){
         ArrayList<String> addresses = new ArrayList<>(peerList.size() - 1);
         for (int i=0; i<peerList.size(); i++){
@@ -54,8 +77,11 @@ public class PeerList {
         }
         return addresses.toArray(new String[0]);
     }
+
+    // returns one string joined by ";"
     public static String getAddressList(String excludeAddr){
         String[] addresses = getAddresses(excludeAddr);
         return String.join(";", addresses);
     }
+    // end getAddresses
 }

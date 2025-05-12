@@ -2,22 +2,31 @@ import Util.LogLevel;
 import Util.Logger;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class MessageProcessing{
 
+    // basically static methods for handling messages of different types
+    // if message has invalid type then none of these will be called
 
+
+    // HANDLERS START
+
+    // CHAT
     public static void handleChat(Message message){
         Logger.chat(message.getSourceAddress(), message.getBody());
     }
+    // end CHAT
 
+
+    // PEER_DISCOVERY_REQUEST
     public static void handlePeerDiscoveryRequest(PeerConnection peer){
         // todo
         peer.sendMessage(Message.createPEER_DISCOVERY_REPLY(peer.getAddress().getHostAddress()));
     }
+    // end PEER_DISCOVERY_REQUEST
 
+
+    // PEER_DISCOVERY_REPLY
     public static void handlePeerDiscoveryReply(Message message){
         // todo
         //      - add only new addresses, so you don't have 2 or more sockets for the same host
@@ -31,4 +40,7 @@ public class MessageProcessing{
             }
         }
     }
+    // end PEER_DISCOVERY_REPLY
+
+    // end HANDLERS
 }

@@ -7,17 +7,34 @@ import java.net.Socket;
 
 public class Server implements Runnable{
 
+    // Server - getting new connections
+
+    // note: the port the server uses is the same in all nodes
+    // set in Constants class, retrieved with Constants.getSERVER_PORT()
+
+
+    // variables
     ServerSocket serverSocket;
     private final int port;
+    // end variables
+
+
+    // Constructor
     public Server(int port) throws IOException {
         serverSocket = new ServerSocket(port);
         this.port = port;
     }
+    // end constructor
 
+    // Getters
     public int getPort(){
         return port;
     }
+    // end getters
 
+
+    // Runnable
+    // for receiving new connections/sockets
     @Override
     public void run() {
 
@@ -43,4 +60,5 @@ public class Server implements Runnable{
             }
         }
     }
+    // end runnable
 }

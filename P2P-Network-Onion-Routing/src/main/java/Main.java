@@ -20,6 +20,7 @@ public class Main {
         //          - wait a sec or two, so everyone can start (ONLY IN TESTING)
         //      2) connect to someone, so you're in a network of at least 2
         //      3) connect to everyone, might take n2 time,
+        //      basically 2) + 3) == set up network, i.e. connect all nodes with each other
         //      4) interface for sending messages
 
         try{
@@ -38,7 +39,7 @@ public class Main {
 
         // DEBUG / TESTING
         try {
-            Thread.sleep(2000);
+            Thread.sleep(1500);
         } catch (InterruptedException e) {
             Logger.log("Error in main at currentThread.wait()", LogLevel.ERROR);
         }

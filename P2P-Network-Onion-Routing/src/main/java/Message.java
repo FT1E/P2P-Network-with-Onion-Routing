@@ -7,11 +7,20 @@ import java.util.UUID;
 
 public class Message {
 
+
+    // Message contents/structure
+    // variables
     private String id;
     private String sourceAddress;
     private MessageType type;
     private String body;
 
+    // end variables
+
+
+    // Constructors
+
+    // Message constructor when sending a message
     public Message(MessageType type, String body){
         id = UUID.randomUUID().toString();
         this.type = type;
@@ -19,6 +28,9 @@ public class Message {
         this.sourceAddress = Constants.getMY_IP();
     }
 
+
+    // Message constructor when receiving a message
+    // throws an error if message has invalid structure
     public Message(String rawMessage) throws IOException {
         String[] tokens = rawMessage.split(" ", 4);
         if (tokens.length != 4){
@@ -32,17 +44,27 @@ public class Message {
 
     }
 
+    // static method for creating a PEER_DISCOVERY_REPLY message
+    // contains all IPs except one (the one of that which requested)
     public static Message createPEER_DISCOVERY_REPLY(String excludeAddr){
         return new Message(MessageType.PEER_DISCOVERY_REPLY, PeerList.getAddressList(excludeAddr));
     }
+
+    // static method for creating a PEER_DISCOVERY_REQUEST message
     public static Message createPEER_DISCOVERY_REQUEST(){
         return new Message(MessageType.PEER_DISCOVERY_REQUEST, ".");
     }
+    // end constructors
 
+    // toString method
     public String toString(){
         return id + " " + sourceAddress + " "+ type.name() + " " + body;
     }
 
+    // end toString method
+
+
+    // Getters
     public String getId() {
         return id;
     }
@@ -57,4 +79,5 @@ public class Message {
     public String getBody() {
         return body;
     }
+    // end getters
 }

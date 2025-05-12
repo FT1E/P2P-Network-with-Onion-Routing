@@ -7,9 +7,16 @@ import java.net.Socket;
 
 public class PeerConnection implements Runnable{
 
+
+    // variables
     private Socket socket;
-    BufferedWriter writer;
-    BufferedReader reader;
+    private BufferedWriter writer;
+    private BufferedReader reader;
+    // end variables
+
+
+    // CONSTRUCTORS
+
     public PeerConnection(Socket socket) throws IOException {
         this.socket = socket;
         OutputStream os = socket.getOutputStream();
@@ -46,11 +53,17 @@ public class PeerConnection implements Runnable{
 
         PeerList.addConnection(this);
     }
+    // end CONSTRUCTORS
 
+
+    // GETTERS
     public InetAddress getAddress(){
         return socket.getInetAddress();
     }
+    // end GETTERS
 
+
+    // Core methods for sending and receiving message
     private String getRawMessage(){
         try {
             return reader.readLine();
@@ -72,8 +85,11 @@ public class PeerConnection implements Runnable{
             return false;
         }
     }
+    // end Core methods
 
 
+
+    // Runnable - get message, process it with the appropriate method, repeat
     @Override
     public void run() {
 
@@ -83,7 +99,7 @@ public class PeerConnection implements Runnable{
 
             rawMessage = getRawMessage();
 
-            if(rawMessage == null) continue;
+            if(rawMessage == null) break;
             try{
                 message = new Message(rawMessage);
             }catch (IOException e){
@@ -91,30 +107,38 @@ public class PeerConnection implements Runnable{
                 continue;
             }
 
-            proccessMessage(message);
+            processMessage(message);
 //            MessageProcessing.addMessage(message);
         }
+
+        disconnect();
     }
 
 
-    private void proccessMessage(Message message){
+    private void processMessage(Message message){
         switch (message.getType()){
             case CHAT -> MessageProcessing.handleChat(message);
             case PEER_DISCOVERY_REPLY -> MessageProcessing.handlePeerDiscoveryReply(message);
             case PEER_DISCOVERY_REQUEST -> MessageProcessing.handlePeerDiscoveryRequest(this);
         }
     }
+    // end Runnable + extra method
 
-
+    // Disconnect
+    // Closing i/o streams and socket connection
+    // returns true/false, so I know whether the connection closed without errors
     public boolean disconnect(){
+        Logger.log("Trying to close connection with peer [" + getAddress().getHostAddress() + "]", LogLevel.INFO);
         try{
             writer.close();
             reader.close();
             socket.close();
+            Logger.log("Successfully closed connection with peer [" + getAddress().getHostAddress() + "]", LogLevel.SUCCESS);
             return true;
         }catch (IOException e){
             Logger.log("Error in trying to close socket with address " + socket.getInetAddress().getHostAddress(), LogLevel.ERROR);
             return false;
         }
     }
+    // end disconnect
 }
