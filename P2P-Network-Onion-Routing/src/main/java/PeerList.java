@@ -31,7 +31,7 @@ public class PeerList {
         peerList.add(peer);
         thread_pool.submit(peer);
 
-        Logger.log("New peer added, has address == " + peer.getAddress().getHostAddress() + " number of peers == " + get_PEER_NUM(), LogLevel.INFO);
+//        Logger.log("New peer added, has address == " + peer.getAddress().getHostAddress() + " number of peers == " + get_PEER_NUM(), LogLevel.INFO);
 
 //        peer.sendMessage(Message.createPEER_DISCOVERY_REQUEST());
 //        Logger.log("New peer added to peerList", LogLevel.SUCCESS);
@@ -47,6 +47,7 @@ public class PeerList {
 
 
     // get PeerConnection
+    // based on index in list
     // for sending messages
     public static PeerConnection get(int i){
         try{
@@ -55,6 +56,16 @@ public class PeerList {
             return null;
         }
     }
+
+    // get PeerConnection
+    // based on address
+    public static PeerConnection get(String address){
+        for (int i = 0; i < peerList.size(); i++) {
+            if (peerList.get(i).getAddress().getHostAddress().equals(address)) return peerList.get(i);
+        }
+        return null;
+    }
+
     // end get PeerConnection
 
 

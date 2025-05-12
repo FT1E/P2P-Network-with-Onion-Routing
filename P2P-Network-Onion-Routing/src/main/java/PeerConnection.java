@@ -117,9 +117,10 @@ public class PeerConnection implements Runnable{
 
     private void processMessage(Message message){
         switch (message.getType()){
-            case CHAT -> MessageProcessing.handleChat(message);
+            case CHAT -> MessageProcessing.handleChat(this, message);
             case PEER_DISCOVERY_REPLY -> MessageProcessing.handlePeerDiscoveryReply(message);
             case PEER_DISCOVERY_REQUEST -> MessageProcessing.handlePeerDiscoveryRequest(this);
+            case ONION -> MessageProcessing.handleONION(message);
         }
     }
     // end Runnable + extra method

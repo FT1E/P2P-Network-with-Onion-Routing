@@ -12,8 +12,8 @@ public class MessageProcessing{
     // HANDLERS START
 
     // CHAT
-    public static void handleChat(Message message){
-        Logger.chat(message.getSourceAddress(), message.getBody());
+    public static void handleChat(PeerConnection peer, Message message){
+        Logger.chat(peer.getAddress().getHostAddress(), message.getBody());
     }
     // end CHAT
 
@@ -42,5 +42,27 @@ public class MessageProcessing{
     }
     // end PEER_DISCOVERY_REPLY
 
+
+    // ONION
+    public static void handleONION(Message message){
+
+        Logger.log("Onion message received:\n" + message.toString(), LogLevel.DEBUG);
+
+        PeerConnection nextPeer = PeerList.get(message.getNextAddress());
+        if (nextPeer == null){
+            Logger.log("nextAddress not present in peerlist [" + message.getNextAddress() + "]", LogLevel.DEBUG);
+            return;
+        }
+        Message nextMessage;
+
+        try{
+            nextMessage = new Message(message.getBody());
+            nextPeer.sendMessage(nextMessage);
+        }catch (IOException e){
+            Logger.log("Error in trying to create next message from an onion message", LogLevel.ERROR);
+        }
+
+    }
+    // end ONION
     // end HANDLERS
 }
