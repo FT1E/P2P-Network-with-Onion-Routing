@@ -2,7 +2,9 @@ import Util.LogLevel;
 import Util.Logger;
 
 import java.io.IOException;
-import java.net.InetAddress;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.UUID;
 
 public class Message {
@@ -31,6 +33,7 @@ public class Message {
     }
 
     // Constructor for onion messages
+    // i.e. messages that need to be resent to host with nextAddress
     public Message(String nextAddress, Message message) throws IOException{
         if (nextAddress == null) throw new IOException();
 
@@ -38,6 +41,32 @@ public class Message {
         this.type = MessageType.ONION;
         this.nextAddress = nextAddress;
         this.body = message.toString();
+    }
+
+    // static method for creating onion messages
+    // i.e. messages so they have 3 hops in between the first sender (this)
+    // and the final receiver (the final destination of address)
+    // note: call MessageProcessing.handleONION() on the return value
+    //
+    public static Message createONION(String finalDest, Message originalMessage){
+        Message message = null;
+        try {
+            message = new Message(finalDest, originalMessage);
+        }catch (IOException e){
+            Logger.log("onion message with nextAddress==null", LogLevel.ERROR);
+        }
+        ArrayList<String> addresses = PeerList.getAddressArrayList(finalDest);
+        Collections.shuffle(addresses);
+        int max = Math.min(3, addresses.size());
+        for (int i = 0; i < max; i++) {
+            try{
+                message = new Message(addresses.get(i), message);
+            }catch (IOException e){
+                Logger.log("onion message with nextAddress==null", LogLevel.ERROR);
+            }
+        }
+
+        return message;
     }
 
     // Message constructor when receiving a message

@@ -1,6 +1,3 @@
-import Util.LogLevel;
-import Util.Logger;
-
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -81,17 +78,22 @@ public class PeerList {
     // get a list of all addresses except excludeAddr
     // used for generating PEER_DISCOVERY_REPLY message
     // returns array
-    public static String[] getAddresses(String excludeAddr){
+    public static String[] getAddressArray(String excludeAddr){
+        return getAddressArrayList(excludeAddr).toArray(new String[0]);
+    }
+
+    public static ArrayList<String> getAddressArrayList(String excludeAddr){
         ArrayList<String> addresses = new ArrayList<>(peerList.size() - 1);
         for (int i=0; i<peerList.size(); i++){
+            if (peerList.get(i).getAddress().getHostAddress().equals(excludeAddr)) continue;
             addresses.add(peerList.get(i).getAddress().getHostAddress());
         }
-        return addresses.toArray(new String[0]);
+        return addresses;
     }
 
     // returns one string joined by ";"
     public static String getAddressList(String excludeAddr){
-        String[] addresses = getAddresses(excludeAddr);
+        String[] addresses = getAddressArray(excludeAddr);
         return String.join(";", addresses);
     }
     // end getAddresses

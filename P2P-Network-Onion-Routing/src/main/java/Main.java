@@ -82,17 +82,9 @@ public class Main {
 
         if (System.getenv("PEER_ID").equals("peer1")){
             String address_dest = PeerList.get(0).getAddress().getHostAddress();
-            String address_mid = PeerList.get(1).getAddress().getHostAddress();
             Logger.log("Destination address:" + address_dest, LogLevel.INFO);
-            Logger.log("Middle address:" + address_mid, LogLevel.INFO);
-
-            Message message;
-            try {
-                message = new Message(address_dest, new Message(MessageType.CHAT, "Hello from peer1"));
-                PeerList.get(address_mid).sendMessage(message);
-            }catch (IOException e){
-                Logger.log("Error in creating onion message, nextAddress == null", LogLevel.ERROR);
-            }
+            Message message = Message.createONION(address_dest, new Message(MessageType.CHAT, "Hello from peer1"));
+            MessageProcessing.handleONION(message);
         }
     }
 }
