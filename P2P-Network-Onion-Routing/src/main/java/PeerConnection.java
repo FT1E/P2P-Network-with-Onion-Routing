@@ -116,7 +116,10 @@ public class PeerConnection implements Runnable{
 
             rawMessage = getRawMessage();
 
-            if(rawMessage == null) break;
+            if(rawMessage == null) {
+                Logger.log("rawMessage == null, breaking connection with " + getAddress().getHostAddress(), LogLevel.DEBUG);
+                break;
+            }
             try{
                 message = new Message(rawMessage);
             }catch (IOException e){
@@ -128,7 +131,7 @@ public class PeerConnection implements Runnable{
 //            MessageProcessing.addMessage(message);
         }
 
-        disconnect();
+        Logger.log("Disconnecting with " + getAddress() + ", status:" + disconnect(), LogLevel.STATUS);
     }
 
 
@@ -146,16 +149,16 @@ public class PeerConnection implements Runnable{
     // Closing i/o streams and socket connection
     // returns true/false, so I know whether the connection closed without errors
     public boolean disconnect(){
-        Logger.log("Trying to close connection with peer [" + getAddress().getHostAddress() + "]", LogLevel.INFO);
+//        Logger.log("Trying to close connection with peer [" + getAddress().getHostAddress() + "]", LogLevel.INFO);
         try{
             PeerList.removeConnection(this);
             writer.close();
             reader.close();
             socket.close();
-            Logger.log("Successfully closed connection with peer [" + getAddress().getHostAddress() + "]", LogLevel.SUCCESS);
+//            Logger.log("Successfully closed connection with peer [" + getAddress().getHostAddress() + "]", LogLevel.SUCCESS);
             return true;
         }catch (IOException e){
-            Logger.log("Error in trying to close socket with address " + socket.getInetAddress().getHostAddress(), LogLevel.ERROR);
+//            Logger.log("Error in trying to close socket with address " + socket.getInetAddress().getHostAddress(), LogLevel.ERROR);
             return false;
         }
     }

@@ -38,6 +38,8 @@ public class Server implements Runnable{
     @Override
     public void run() {
 
+        Thread.currentThread().setName("SERVER");
+
         Logger.log("Server started ... ", LogLevel.SUCCESS);
 
         Socket socket;

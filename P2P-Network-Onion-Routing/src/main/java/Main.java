@@ -60,15 +60,23 @@ public class Main {
 
         // todo 3) Connect to everyone in the network
         //      for now passing it as csv list in env variable
-        String[] hosts = System.getenv("PEERS").split(",");
-        for (int i = 0; i < hosts.length; i++) {
-            try{
-                new PeerConnection(hosts[i]);
-            }catch (IOException e){
-                Logger.log("Error in trying to connect with " + hosts[i], LogLevel.ERROR);
-            }
-        }
+//        String[] hosts = System.getenv("PEERS").split(",");
+//        for (int i = 0; i < hosts.length; i++) {
+//            try{
+//                new PeerConnection(hosts[i]);
+//            }catch (IOException e){
+//                Logger.log("Error in trying to connect with " + hosts[i], LogLevel.ERROR);
+//            }
+//        }
 
+        // todo 2) + 3)
+        //       set up the network
+        try{
+            PeerConnection peer = new PeerConnection(System.getenv("BOOTSTRAP_ADDRESS"));
+            peer.sendMessage(Message.createPEER_DISCOVERY_REQUEST());
+        }catch (IOException e){
+            Logger.log("Error in trying to connect to peer!");
+        }
 
         try {
             Thread.sleep(1500);
@@ -86,5 +94,12 @@ public class Main {
             Message message = Message.createONION(address_dest, new Message(MessageType.CHAT, "Hello from peer1"));
             MessageProcessing.handleONION(message);
         }
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Logger.log("Error in main at currentThread.wait()", LogLevel.ERROR);
+        }
+        Logger.log("All addresses:" + PeerList.getAddressList(""));
     }
 }

@@ -34,7 +34,7 @@ public class MessageProcessing{
         String[] newAddresses = message.getBody().split(";");
         for (int i = 0; i < newAddresses.length; i++) {
             try {
-                PeerList.addConnection(new PeerConnection(newAddresses[i]));
+                new PeerConnection(newAddresses[i]);
             } catch (IOException e) {
                 Logger.log("Error in trying to connect with " + newAddresses[i], LogLevel.ERROR);
             }

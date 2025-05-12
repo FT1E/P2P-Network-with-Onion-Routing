@@ -1,3 +1,6 @@
+import Util.LogLevel;
+import Util.Logger;
+
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,6 +23,7 @@ public class PeerList {
 
         for (int i = 0; i < peerList.size(); i++) {
             if (peerList.get(i).getAddress().getHostAddress().equals(peer.getAddress().getHostAddress())) {
+                Logger.log("Already connected with " + peer.getAddress().getHostAddress() + ", closing connection", LogLevel.INFO);
                 peer.disconnect();
                 return;
             }
@@ -38,7 +42,6 @@ public class PeerList {
     // Remove connection
     public synchronized static void removeConnection(PeerConnection peer){
         peerList.remove(peer);
-        peer.disconnect();
     }
     // end remove connection
 
