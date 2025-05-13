@@ -1,7 +1,8 @@
 
 // todo:
 //      - static createConnection/createPeer method in PeerList for new connections
-//
+//      - create a HTTP-Request class and wrap it in a message, i.e. put it in message body
+
 
 import Util.LogLevel;
 import Util.Logger;
