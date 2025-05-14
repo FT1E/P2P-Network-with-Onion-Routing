@@ -10,6 +10,8 @@ import Util.Logger;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class Main {
     public static void main(String[] args){
@@ -87,15 +89,20 @@ public class Main {
         //      - maybe a gui base on command line args
         //      - for now just text interface
 
-        if (System.getenv("PEER_ID").equals("peer1")){
-            PeerList.get(0).sendMessage(Message.createRequest(MessageSubType.CHAT, "Hello from peer1"));
-        }
-
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             Logger.log("Error in main at currentThread.wait()", LogLevel.ERROR);
         }
         Logger.log("All addresses:" + PeerList.getAddressList(""));
+
+        if (!System.getenv("PEER_ID").equals("peer1")){
+            return;
+        }
+
+        String final_dest = PeerList.get(0).getAddress().getHostAddress();
+        Message message = Message.createRequest(MessageSubType.CHAT, "Hello from peer1");
+        message = Message.createONION_REQUEST_PACKET(final_dest, message);
+        MessageProcessing.handleONION_REQUEST(message, null);
     }
 }

@@ -73,6 +73,10 @@ public class PeerConnection implements Runnable{
     public InetAddress getAddress(){
         return socket.getInetAddress();
     }
+
+    public boolean status(){
+        return socket.isConnected();
+    }
     // end GETTERS
 
 
@@ -122,6 +126,8 @@ public class PeerConnection implements Runnable{
                 Logger.log("rawMessage == null, breaking connection with " + getAddress().getHostAddress(), LogLevel.DEBUG);
                 break;
             }
+
+            Logger.log("Message received from " + getAddress().getHostAddress() + ":" + rawMessage, LogLevel.DEBUG);
             try{
                 message = new Message(rawMessage);
             }catch (IOException e){
@@ -129,32 +135,13 @@ public class PeerConnection implements Runnable{
                 continue;
             }
 
-            processMessage(message);
-//            MessageProcessing.addMessage(message);
+            MessageProcessing.handle(message, this);
+
         }
 
         Logger.log("Disconnecting with " + getAddress() + ", status:" + disconnect(), LogLevel.STATUS);
     }
-
-    private void processMessage(Message message){
-        if (message.getType() == MessageMainType.REQUEST){
-            switch (message.getSubType()){
-                case CHAT -> RequestProcessing.handleCHAT(message, this);
-                case PEER_DISCOVERY -> RequestProcessing.handlePEER_DISCOVERY(message, this);
-                // todo
-                default -> Logger.log("Implement ONION and KEY_EXCHANGE REQUEST handling");
-            }
-        }else{
-            switch (message.getSubType()){
-                case CHAT -> ReplyProcessing.handleCHAT(message, this);
-                case PEER_DISCOVERY -> ReplyProcessing.handlePEER_DISCOVERY(message);
-                // todo
-                default -> Logger.log("To be implemented");
-
-            }
-        }
-    }
-    // end Runnable + extra method
+    // end Runnable
 
     // Disconnect
     // Closing i/o streams and socket connection

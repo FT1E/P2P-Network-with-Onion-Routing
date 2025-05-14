@@ -2,6 +2,8 @@ import Util.LogLevel;
 import Util.Logger;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.UUID;
 
 public class Message {
@@ -10,6 +12,7 @@ public class Message {
     //      - so you can use the same ONION path multiple times, with the established
     //          in-between nodes/peers
 
+    // note: REQUEST ONION always has inside body a REQUEST message
 
     // variables
     private String id;
@@ -68,6 +71,18 @@ public class Message {
         }
     }
 
+    public static Message createONION_REQUEST_PACKET(String final_dest, Message message){
+
+        ArrayList<String> addresses = PeerList.getAddressArrayList(final_dest);
+        Collections.shuffle(addresses);
+
+        message = Message.createOnionRequest(final_dest, message.toString());
+        for (int i = 0; i < 3; i++) {
+            message = Message.createOnionRequest(addresses.get(i), message.toString());
+        }
+        return message;
+    }
+
     // default constructor for creating ONION REPLY messages
     public static Message createOnionReply(String id, String body) throws IOException {
         return new Message(id, MessageMainType.REPLY, MessageSubType.ONION, null, body);
@@ -111,6 +126,8 @@ public class Message {
     }
 
     public String getNextAddress() {
+        // in REQUEST ONION message
+        // for where to send the internal message
         return nextAddress;
     }
 
