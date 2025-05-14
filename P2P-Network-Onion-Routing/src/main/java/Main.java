@@ -7,9 +7,7 @@
 import Util.LogLevel;
 import Util.Logger;
 
-import java.awt.desktop.ScreenSleepEvent;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -74,7 +72,7 @@ public class Main {
         //       set up the network
         try{
             PeerConnection peer = new PeerConnection(System.getenv("BOOTSTRAP_ADDRESS"));
-            peer.sendMessage(Message.createPEER_DISCOVERY_REQUEST());
+            peer.sendMessage(Message.createRequest(MessageSubType.PEER_DISCOVERY, "."));
         }catch (IOException e){
             Logger.log("Error in trying to connect to peer!");
         }
@@ -90,10 +88,7 @@ public class Main {
         //      - for now just text interface
 
         if (System.getenv("PEER_ID").equals("peer1")){
-            String address_dest = PeerList.get(0).getAddress().getHostAddress();
-            Logger.log("Destination address:" + address_dest, LogLevel.INFO);
-            Message message = Message.createONION(address_dest, new Message(MessageType.CHAT, "Hello from peer1"));
-            MessageProcessing.handleONION(message);
+            PeerList.get(0).sendMessage(Message.createRequest(MessageSubType.CHAT, "Hello from peer1"));
         }
 
         try {

@@ -102,6 +102,8 @@ public class PeerConnection implements Runnable{
             }
         }
     }
+
+
     // end Core methods
 
 
@@ -134,13 +136,22 @@ public class PeerConnection implements Runnable{
         Logger.log("Disconnecting with " + getAddress() + ", status:" + disconnect(), LogLevel.STATUS);
     }
 
-
     private void processMessage(Message message){
-        switch (message.getType()){
-            case CHAT -> MessageProcessing.handleChat(this, message);
-            case PEER_DISCOVERY_REPLY -> MessageProcessing.handlePeerDiscoveryReply(message);
-            case PEER_DISCOVERY_REQUEST -> MessageProcessing.handlePeerDiscoveryRequest(this);
-            case ONION -> MessageProcessing.handleONION(message);
+        if (message.getType() == MessageMainType.REQUEST){
+            switch (message.getSubType()){
+                case CHAT -> RequestProcessing.handleCHAT(message, this);
+                case PEER_DISCOVERY -> RequestProcessing.handlePEER_DISCOVERY(message, this);
+                // todo
+                default -> Logger.log("Implement ONION and KEY_EXCHANGE REQUEST handling");
+            }
+        }else{
+            switch (message.getSubType()){
+                case CHAT -> ReplyProcessing.handleCHAT(message, this);
+                case PEER_DISCOVERY -> ReplyProcessing.handlePEER_DISCOVERY(message);
+                // todo
+                default -> Logger.log("To be implemented");
+
+            }
         }
     }
     // end Runnable + extra method

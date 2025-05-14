@@ -2,126 +2,121 @@ import Util.LogLevel;
 import Util.Logger;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.UUID;
 
 public class Message {
 
+    // todo - connectionId
+    //      - so you can use the same ONION path multiple times, with the established
+    //          in-between nodes/peers
 
-    // Message contents/structure
+
     // variables
     private String id;
-//    private String sourceAddress;
-    private MessageType type;
-    private String nextAddress;
+    private MessageMainType type;
+    private MessageSubType subType;
+    private String nextAddress;     // for ONION messages
     private String body;
-
     // end variables
-
 
     // Constructors
 
-    // Message constructor when sending a message
-    // nextAddress == null
-    public Message(MessageType type, String body){
-        id = UUID.randomUUID().toString();
+    // Default
+    public Message(String id, MessageMainType type, MessageSubType subType, String nextAddress, String body) throws IOException {
+
+
+        if (type == MessageMainType.REQUEST){
+            this.id = UUID.randomUUID().toString();
+        }else if (id == null){
+            // REPLY message with no id set
+            // need to know the id of the request you're responding to
+            Logger.log("Need to set id for REPLY messages!", LogLevel.WARN);
+            throw new IOException();
+        }else{
+            // REPLY message with id set
+            this.id = id;
+        }
         this.type = type;
-        this.body = body;
-//        this.sourceAddress = Constants.getMY_IP();
-    }
-
-    // Constructor for onion messages
-    // i.e. messages that need to be resent to host with nextAddress
-    public Message(String nextAddress, Message message) throws IOException{
-        if (nextAddress == null) throw new IOException();
-
-        id = UUID.randomUUID().toString();
-        this.type = MessageType.ONION;
+        this.subType = subType;
         this.nextAddress = nextAddress;
-        this.body = message.toString();
+        this.body = body;
     }
 
-    // static method for creating onion messages
-    // i.e. messages so they have 3 hops in between the first sender (this)
-    // and the final receiver (the final destination of address)
-    // note: call MessageProcessing.handleONION() on the return value
-    //
-    public static Message createONION(String finalDest, Message originalMessage){
-        Message message = null;
+    // default constructor for creating REQUEST messages
+    // NOT FOR ONION Messages
+    public static Message createRequest(MessageSubType subType, String body){
         try {
-            message = new Message(finalDest, originalMessage);
-        }catch (IOException e){
-            Logger.log("onion message with nextAddress==null", LogLevel.ERROR);
+            return new Message(null, MessageMainType.REQUEST, subType, null, body);
+        } catch (IOException e) {
+            Logger.log("Error at Message.createRequest()! Check code!", LogLevel.WARN);
+            return null;
         }
-        ArrayList<String> addresses = PeerList.getAddressArrayList(finalDest);
-        Collections.shuffle(addresses);
-        int max = Math.min(3, addresses.size());
-        for (int i = 0; i < max; i++) {
-            try{
-                message = new Message(addresses.get(i), message);
-            }catch (IOException e){
-                Logger.log("onion message with nextAddress==null", LogLevel.ERROR);
-            }
-        }
-
-        return message;
     }
 
-    // Message constructor when receiving a message
-    // throws an error if message has invalid structure
+    // default constructor for creating REPLY messages
+    public static Message createReply(String id, MessageSubType subType, String body) throws IOException {
+        return new Message(id, MessageMainType.REPLY, subType, null, body);
+    }
+
+    // default constructor for creating ONION REQUEST messages
+    public static Message createOnionRequest(String nextAddress, String body){
+        try {
+            return new Message(null, MessageMainType.REQUEST, MessageSubType.ONION, nextAddress, body);
+        } catch (IOException e) {
+            Logger.log("Error in createOnionRequest() Check code!", LogLevel.WARN);
+            return null;
+        }
+    }
+
+    // default constructor for creating ONION REPLY messages
+    public static Message createOnionReply(String id, String body) throws IOException {
+        return new Message(id, MessageMainType.REPLY, MessageSubType.ONION, null, body);
+    }
+
+
+
+    // for converting raw strings into message objects
     public Message(String rawMessage) throws IOException {
-        String[] tokens = rawMessage.split(" ", 4);
-        if (tokens.length != 4){
-            Logger.log("Invalid raw message", LogLevel.ERROR);
+        String[] tokens = rawMessage.split(" ", 5);
+        if (tokens.length != 5){
+            Logger.log("Invalid raw message structure!", LogLevel.WARN);
             throw new IOException();
         }
         id = tokens[0];
-        nextAddress = tokens[1];
-        type = MessageType.valueOf(tokens[2]);
-        body = tokens[3];
-
-    }
-
-    // static method for creating a PEER_DISCOVERY_REPLY message
-    // contains all IPs except one (the one of that which requested)
-    public static Message createPEER_DISCOVERY_REPLY(String excludeAddr){
-        return new Message(MessageType.PEER_DISCOVERY_REPLY, PeerList.getAddressList(excludeAddr));
-    }
-
-    // static method for creating a PEER_DISCOVERY_REQUEST message
-    public static Message createPEER_DISCOVERY_REQUEST(){
-        return new Message(MessageType.PEER_DISCOVERY_REQUEST, ".");
+        type = MessageMainType.valueOf(tokens[1]);
+        subType = MessageSubType.valueOf(tokens[2]);
+        nextAddress = tokens[3];
+        body = tokens[4];
     }
     // end constructors
 
-    // toString method
+    // converting message object to raw string
     public String toString(){
-        return id + " " + nextAddress + " "+ type.name() + " " + body;
+        return id + " " + type.name() + " " + subType.name() + " " + nextAddress + " " + body;
     }
-
-    // end toString method
 
 
     // Getters
+
     public String getId() {
         return id;
     }
 
-//    public String getSourceAddress() {
-//        return sourceAddress;
-//    }
-    public MessageType getType() {
+    public MessageMainType getType() {
         return type;
+    }
+
+    public MessageSubType getSubType() {
+        return subType;
+    }
+
+    public String getNextAddress() {
+        return nextAddress;
     }
 
     public String getBody() {
         return body;
     }
 
-    public String getNextAddress(){
-        return nextAddress;
-    }
     // end getters
 }
