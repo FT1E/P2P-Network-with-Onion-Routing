@@ -18,13 +18,15 @@ public class OnionHandler implements Runnable{
     // and send it back to the one who sent REQUEST ONION
 
     private Message replyMessage;
+    private final int wrap_count;
 
     Object ALARM = new Object();
-    public OnionHandler(String packet_id, String message_id, PeerConnection before_peer, PeerConnection next_peer){
+    public OnionHandler(String packet_id, String message_id, PeerConnection before_peer, PeerConnection next_peer, int wrap_count){
         this.before_peer = before_peer;
         this.packet_id = packet_id;
         this.message_id = message_id;
         this.next_peer = next_peer;
+        this.wrap_count = wrap_count;
     }
     @Override
     public void run() {
@@ -42,7 +44,7 @@ public class OnionHandler implements Runnable{
             // if you don't need to send it back
             // just process it
             if (before_peer == null){
-                MessageProcessing.handleONION_REPLY(replyMessage, 3, next_peer);
+                MessageProcessing.handleONION_REPLY(replyMessage, wrap_count, next_peer);
                 return;
             }
 

@@ -71,7 +71,7 @@ public class Message {
         }
     }
 
-    public static Message createONION_REQUEST_PACKET(String final_dest, Message message){
+    public static Message createONION_REQUEST_PACKET(String final_dest, Message message, int wrap_count){
 
         ArrayList<String> addresses = PeerList.getAddressArrayList(final_dest);
         Collections.shuffle(addresses);

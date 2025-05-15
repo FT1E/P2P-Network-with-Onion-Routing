@@ -30,7 +30,7 @@ public class MessageProcessing {
         switch (message.getSubType()){
             case CHAT -> handleCHAT_REQUEST(message, peer);
             case PEER_DISCOVERY -> handlePEER_DISCOVERY_REQUEST(message, peer);
-            case ONION -> handleONION_REQUEST(message, peer);
+            case ONION -> handleONION_REQUEST(message, peer, 0);
             // todo
             case KEY_EXCHANGE -> Logger.log("Todo");
         }
@@ -83,7 +83,7 @@ public class MessageProcessing {
         }
     }
 
-    public static void handleONION_REQUEST(Message packetMessage, PeerConnection peer) {
+    public static void handleONION_REQUEST(Message packetMessage, PeerConnection peer, int wrap_count) {
         // TODO
         //      1) unwrap the message
         //      if it's an ONION internal message:
@@ -119,7 +119,7 @@ public class MessageProcessing {
 
         // todo wait for its REPLY (its id == same id as INTERNAL MESSAGE)
         //  before sending it
-        OnionHandler onionHandler = new OnionHandler(packetMessage.getId(), internalMessage.getId(), peer, nextPeer);
+        OnionHandler onionHandler = new OnionHandler(packetMessage.getId(), internalMessage.getId(), peer, nextPeer, wrap_count);
         onionRequests.put(internalMessage.getId(), onionHandler);
         thread_pool.submit(onionHandler);
 
