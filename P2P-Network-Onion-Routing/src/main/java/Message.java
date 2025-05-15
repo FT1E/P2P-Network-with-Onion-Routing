@@ -71,15 +71,25 @@ public class Message {
         }
     }
 
-    public static Message createONION_REQUEST_PACKET(String final_dest, Message message, int wrap_count){
+    public static Message createONION_REQUEST_PACKET(String final_dest, MessageSubType subType, String body, int wrap_count){
 
         ArrayList<String> addresses = PeerList.getAddressArrayList(final_dest);
         Collections.shuffle(addresses);
 
-        message = Message.createOnionRequest(final_dest, message.toString());
-        for (int i = 0; i < 3; i++) {
+//        message = Message.createOnionRequest(final_dest, message.toString());
+
+        Message message = null;
+        try {
+            message = new Message(null, MessageMainType.REQUEST, subType, final_dest, body);
+        } catch (IOException e) {
+            Logger.log("Error while creating internal most message for ONION packet", LogLevel.WARN);
+            return null;
+        }
+
+        for (int i = 0; i < wrap_count; i++) {
             message = Message.createOnionRequest(addresses.get(i), message.toString());
         }
+        message = Message.createOnionRequest(addresses.get(wrap_count-1), message.toString());
         return message;
     }
 

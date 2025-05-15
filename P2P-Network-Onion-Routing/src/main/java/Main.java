@@ -101,8 +101,8 @@ public class Main {
         }
 
         String final_dest = PeerList.get(0).getAddress().getHostAddress();
-        Message message = Message.createRequest(MessageSubType.CHAT, "Hello from peer1");
-        message = Message.createONION_REQUEST_PACKET(final_dest, message, 3);
+//        Message message = Message.createRequest(MessageSubType.CHAT, "Hello from peer1");
+        Message message = Message.createONION_REQUEST_PACKET(final_dest, MessageSubType.CHAT, "Hello from peer1", 3);
         MessageProcessing.handleONION_REQUEST(message, null, 3);
     }
 }

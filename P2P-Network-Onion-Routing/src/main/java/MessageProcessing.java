@@ -83,19 +83,22 @@ public class MessageProcessing {
         }
     }
 
-    public static void handleONION_REQUEST(Message packetMessage, PeerConnection peer, int wrap_count) {
+    public static void handleONION_REQUEST(Message packetMessage, PeerConnection beforePeer, int wrap_count) {
         // TODO
         //      1) unwrap the message
-        //      if it's an ONION internal message:
-        //          2) send it and wait for REPLY ONION
+        //          2) send the REQUEST inside and wait for its REPLY
         //          3) once you receive the REPLY:
-        //          check if you need to wrap it in REPLY ONION and send it back
-        //          OR
-        //          process it
-        //      if it's not an ONION message:
-        //          4) send the REQUEST inside and wait for its REPLY
-        //          5) once you receive the REPLY:
         //          wrap it in REPLY ONION and send it back
+        //          OR
+        //          process it if you're the one who sent the first REQUEST ONION
+
+
+
+//        if(beforePeer != null) {
+//            Logger.log("1) Unwrapping REQUEST ONION message from " + beforePeer.getAddress().getHostAddress(), LogLevel.DEBUG);
+//        }else{
+//            Logger.log("1) Sending the first REQUEST ONION message", LogLevel.DEBUG);
+//        }
 
 
         // 1) unwrap the message
@@ -110,16 +113,29 @@ public class MessageProcessing {
 
         // note: inside of REQUEST ONION is always REQUEST [something]
 
+
+
+//        Logger.log("2) Sending internal message of REQUEST ONION to " + internalMessage.getNextAddress(), LogLevel.DEBUG);
+
+
+
         // get next peer
-        PeerConnection nextPeer = PeerList.get(packetMessage.getNextAddress());
+        PeerConnection nextPeer = PeerList.get(internalMessage.getNextAddress());
         if (nextPeer == null){
             Logger.log("next peer for REQUEST ONION not present:" + packetMessage.getNextAddress(), LogLevel.WARN);
             return;
         }
 
+
+
+//        Logger.log("3) Waiting for REPLY message with id:" + internalMessage.getId(), LogLevel.DEBUG);
+
+
+
+        
         // todo wait for its REPLY (its id == same id as INTERNAL MESSAGE)
         //  before sending it
-        OnionHandler onionHandler = new OnionHandler(packetMessage.getId(), internalMessage.getId(), peer, nextPeer, wrap_count);
+        OnionHandler onionHandler = new OnionHandler(packetMessage.getId(), internalMessage.getId(), beforePeer, nextPeer, wrap_count);
         onionRequests.put(internalMessage.getId(), onionHandler);
         thread_pool.submit(onionHandler);
 
