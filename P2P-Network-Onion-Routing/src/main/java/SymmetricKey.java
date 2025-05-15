@@ -3,6 +3,7 @@ import Util.Logger;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
 import java.util.Base64;
 
@@ -11,26 +12,50 @@ public class SymmetricKey {
     // todo - think of which encrypting/decrypting algs to use
 
     // variables
-    private final SecretKey symmetricKey;
-    private final IvParameterSpec ivSpec;
+    private SecretKey symmetricKey;
+    private byte[] iv;
+    private IvParameterSpec ivSpec;
     // end variables
 
     // Constructors
-    public SymmetricKey() throws NoSuchAlgorithmException {
+    public SymmetricKey() {
 
-        KeyGenerator key_gen = KeyGenerator.getInstance("AES");
+        KeyGenerator key_gen = null;
+        try {
+            key_gen = KeyGenerator.getInstance("AES");
+        } catch (NoSuchAlgorithmException e) {
+            Logger.log("Check code in SymmetricKey constructor at KeyGenerator.getInstance():" + e.getMessage(), LogLevel.WARN);
+            return;
+        }
         symmetricKey = key_gen.generateKey();
 
-        SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
-        byte[] random = new byte[16];
-        secureRandom.nextBytes(random);
-        ivSpec = new IvParameterSpec(random);
+        SecureRandom secureRandom = null;
+        try {
+            secureRandom = SecureRandom.getInstance("SHA1PRNG");
+        } catch (NoSuchAlgorithmException e) {
+            Logger.log("Check code in SymmetricKey constructor at SecureRandom.getInstance():" + e.getMessage(), LogLevel.WARN);
+            return;
+        }
+
+        iv = new byte[16];
+        secureRandom.nextBytes(iv);
+        ivSpec = new IvParameterSpec(iv);
     }
 
     public SymmetricKey(SecretKey key, byte[] randomIvSpec){
         this.symmetricKey = key;
         ivSpec = new IvParameterSpec(randomIvSpec);
     }
+
+    // when you have a string encoding of a key
+    public SymmetricKey(String encoding){
+        String[] tokens = encoding.split(" ", 2);
+
+        byte[] decoded_key_bytes = Base64.getDecoder().decode(tokens[0]);
+        symmetricKey = new SecretKeySpec(decoded_key_bytes, 0, decoded_key_bytes.length, "AES");
+        ivSpec = new IvParameterSpec(Base64.getDecoder().decode(tokens[1]));
+    }
+
     // end constructors
 
     // encrypting and decrypting
@@ -88,4 +113,13 @@ public class SymmetricKey {
     }
 
     // end encrypting and decrypting
+
+
+    // getters
+    public String encodeKey_toString(){
+        // todo - encode by joining the key and the ivSpec together
+        //  with a separator char which doesn't appear
+        return Base64.getEncoder().encodeToString(symmetricKey.getEncoded()) + " " + Base64.getEncoder().encodeToString(iv);
+    }
+    // end getters
 }

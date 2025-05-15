@@ -6,6 +6,9 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.security.*;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 public class AsymmetricKeyPair {
@@ -39,6 +42,31 @@ public class AsymmetricKeyPair {
         this.publicKey = publicKey;
         this.privateKey = null;
     }
+
+    // when you have a public key encoded to a string
+    public AsymmetricKeyPair(String publicKey_string) throws NoSuchAlgorithmException, InvalidKeySpecException{
+        privateKey = null;
+
+        EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKey_string));
+
+        KeyFactory keyFactory;
+        try {
+            // note: same algorithm name as in default constructor
+            keyFactory = KeyFactory.getInstance("RSA");
+        } catch (NoSuchAlgorithmException e) {
+            Logger.log("Check code! In AsymmetricKeyPair constructor KeyFactory.getInstance():" + e.getMessage(), LogLevel.WARN);
+            throw e;
+        }
+
+        try {
+            this.publicKey = keyFactory.generatePublic(publicKeySpec);
+        } catch (InvalidKeySpecException e) {
+            Logger.log("Check code! In AsymmetricKeyPair constructor at keyFactory.generatePublic():" + e.getMessage(), LogLevel.WARN);
+            throw e;
+        }
+
+    }
+
     // end constructors
 
     // Encrypting and decrypting
@@ -115,4 +143,13 @@ public class AsymmetricKeyPair {
 
     // end encrypting and decrypting methods
 
+
+    // getters
+    // 1 getter for public key encoded to string
+    // todo
+    public String encodePublicKey_toString(){
+        // encoding of public key
+        return Base64.getEncoder().encodeToString(publicKey.getEncoded());
+    }
+    // end getters
 }

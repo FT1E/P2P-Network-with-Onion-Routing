@@ -132,7 +132,7 @@ public class MessageProcessing {
 
 
 
-        
+
         // todo wait for its REPLY (its id == same id as INTERNAL MESSAGE)
         //  before sending it
         OnionHandler onionHandler = new OnionHandler(packetMessage.getId(), internalMessage.getId(), beforePeer, nextPeer, wrap_count);
